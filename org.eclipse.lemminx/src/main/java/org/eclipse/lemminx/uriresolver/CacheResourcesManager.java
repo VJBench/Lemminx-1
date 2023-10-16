@@ -36,10 +36,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.lemminx.uriresolver.CacheResourceDownloadingException.CacheResourceDownloadingError;
-import org.eclipse.lemminx.uriresolver.InvalidURIException.InvalidURIError;
 import org.eclipse.lemminx.utils.FilesUtils;
 import org.eclipse.lemminx.utils.StringUtils;
-import org.eclipse.lemminx.utils.platform.Platform;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -53,7 +51,7 @@ import com.google.common.io.RecursiveDeleteOption;
 public class CacheResourcesManager {
 
 	private static final String USER_AGENT_KEY = "User-Agent";
-	private static final String USER_AGENT_VALUE = "LemMinX/"+Platform.getVersion().getVersionNumber() + " ("+Platform.getOS().getName() + " "+ Platform.getOS().getVersion()+")";
+	private static final String USER_AGENT_VALUE = "LemMinX";
 
 	protected final Cache<String, CacheResourceDownloadedException> unavailableURICache;
 
@@ -239,26 +237,14 @@ public class CacheResourcesManager {
 	}
 
 	public static Path getResourceCachePath(String resourceURI) throws IOException {
-		URI uri = null;
-		try {
-			uri = URI.create(resourceURI);
-		} catch (Exception e) {
-			throw new InvalidURIException(resourceURI, InvalidURIError.ILLEGAL_SYNTAX, e);
-		}
+		URI uri = URI.create(resourceURI);
 		return getResourceCachePath(uri);
 	}
 
 	public static Path getResourceCachePath(URI uri) throws IOException {
-		//Eliminate all path traversals
-		URI normalizedUri = uri.normalize();
-
-		//If there's any /../ left, we bail, as that looks like a malicious URI.
-		if (normalizedUri.getPath().contains("/../")) {
-			throw new InvalidURIException(uri.toString(), InvalidURIError.INVALID_PATH);
-		}
-		Path resourceCachePath = normalizedUri.getPort() > 0
-				? Paths.get(CACHE_PATH, normalizedUri.getScheme(), normalizedUri.getHost(), String.valueOf(normalizedUri.getPort()), normalizedUri.getPath())
-				: Paths.get(CACHE_PATH, normalizedUri.getScheme(), normalizedUri.getHost(), normalizedUri.getPath());
+		Path resourceCachePath = uri.getPort() > 0
+				? Paths.get(CACHE_PATH, uri.getScheme(), uri.getHost(), String.valueOf(uri.getPort()), uri.getPath())
+				: Paths.get(CACHE_PATH, uri.getScheme(), uri.getHost(), uri.getPath());
 		return FilesUtils.getDeployedPath(resourceCachePath);
 	}
 

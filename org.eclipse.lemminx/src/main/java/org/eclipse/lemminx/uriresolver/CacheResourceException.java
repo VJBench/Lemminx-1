@@ -20,7 +20,7 @@ import org.eclipse.lemminx.utils.DOMUtils;
  * @author Angelo ZERR
  *
  */
-public abstract class CacheResourceException extends RuntimeException {
+public class CacheResourceException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 
